@@ -1,0 +1,9 @@
+rdflib
+tqdm
+SPARQLWrapper
+joblib
+scikit-learn
+pandas
+glob2
+line_profiler
+memory_profiler

@@ -1,0 +1,3 @@
+parameter	value
+in_gdsc_drug_file	../data/gdsc/PANCANCER_IC_Wed Oct 10 03_15_39 2018.pkl
+out_folder	../output/gdsc/

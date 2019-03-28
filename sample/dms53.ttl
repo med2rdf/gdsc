@@ -1,0 +1,68 @@
+@prefix bao: <http://www.bioassayontology.org/bao#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix gdsc: <https://www.cancerrxgene.org/translation/gdsc/> .
+@prefix gdscc: <https://www.cancerrxgene.org/translation/links/cell_line/> .
+@prefix gdscd: <https://www.cancerrxgene.org/translation/links/drug/> .
+@prefix m2r: <http://med2rdf/org/ontology/med2rdf#> .
+@prefix ontology: <https://www.cancerrxgene.org/translation/gdsc/ontology#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sio: <http://semanticscience.org/resource/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix tgexpc: <http://purl.jp/bio/101/opentggates/ExperimentalCondition/> .
+@prefix tgo: <http://purl.jp/bio/101/opentggates/ontology/> .
+@prefix uo: <http://purl.obolibrary.org/obo/> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+gdscc:DMS53 a m2r:CellLine,
+        uo:BTO_0005668 ;
+    rdfs:label "907295" ;
+    m2r:drug [ a tgo:ExperimentalCondition,
+                bao:ExperimentalSpecification ;
+            m2r:drug <https://www.cancerrxgene.org/translation/links/drug/169396>,
+                <https://www.cancerrxgene.org/translation/links/drug/169397>,
+                <https://www.cancerrxgene.org/translation/links/drug/169398> ;
+            tgo:testType "in vitro" ] ;
+    ontology:tcga_classification "SCLC" ;
+    ontology:tissue "lung" ;
+    ontology:tissue_subtype "lung_small_cell_carcinoma" .
+
+<https://www.cancerrxgene.org/translation/links/drug/169396> a tgo:ChemicalCompound ;
+    rdfs:label "Doxorubicin" ;
+    sio:SIO_000216 [ a uo:MCIT_C64774 ;
+            sio:SIO_000300 0.89359217 ],
+        [ a uo:MI_0641 ;
+            sio:SIO_000221 uo:UO_0000064 ;
+            sio:SIO_000300 0.39437767 ] ;
+    skos:altLabel "dms53_doxorubicin" ;
+    gdsc:dataset_ver "17.3" ;
+    gdsc:ic50_results_id "169396" .
+
+<https://www.cancerrxgene.org/translation/links/drug/169397> a tgo:ChemicalCompound ;
+    rdfs:label "Etoposide" ;
+    sio:SIO_000216 [ a uo:MCIT_C64774 ;
+            sio:SIO_000300 0.95461344 ],
+        [ a uo:MI_0641 ;
+            sio:SIO_000221 uo:UO_0000064 ;
+            sio:SIO_000300 4.26694136 ] ;
+    skos:altLabel "dms53_etoposide" ;
+    gdsc:dataset_ver "17.3" ;
+    gdsc:ic50_results_id "169397" .
+
+<https://www.cancerrxgene.org/translation/links/drug/169398> a tgo:ChemicalCompound ;
+    rdfs:label "Gemcitabine" ;
+    sio:SIO_000216 [ a uo:MCIT_C64774 ;
+            sio:SIO_000300 0.8332055 ],
+        [ a uo:MI_0641 ;
+            sio:SIO_000221 uo:UO_0000064 ;
+            sio:SIO_000300 -0.29261995 ] ;
+    skos:altLabel "dms53_gemcitabine" ;
+    gdsc:dataset_ver "17.3" ;
+    gdsc:ic50_results_id "169398" .
+
+uo:MCIT_C64774 rdfs:label "AUC" .
+
+uo:MI_0641 rdfs:label "IC50" .
+
+uo:UO_0000064 rdfs:label "μM" .
