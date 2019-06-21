@@ -21,8 +21,8 @@ gdscc:DMS53 a m2r:CellLine,
     m2r:drug [ a tgo:ExperimentalCondition,
                 bao:ExperimentalSpecification ;
             m2r:drug <https://www.cancerrxgene.org/translation/links/drug/169396>,
-                <https://www.cancerrxgene.org/translation/links/drug/169397>,
-                <https://www.cancerrxgene.org/translation/links/drug/169398> ;
+                <https://www.cancerrxgene.org/translation/links/drug/169488>,
+                <https://www.cancerrxgene.org/translation/links/drug/169670> ;
             tgo:testType "in vitro" ] ;
     ontology:tcga_classification "SCLC" ;
     ontology:tissue "lung" ;
@@ -34,35 +34,49 @@ gdscc:DMS53 a m2r:CellLine,
             sio:SIO_000300 0.89359217 ],
         [ a uo:MI_0641 ;
             sio:SIO_000221 uo:UO_0000064 ;
-            sio:SIO_000300 0.39437767 ] ;
+            sio:SIO_000300 0.39437767 ],
+        [ a uo:ScreeningMaxConcentration ;
+            sio:SIO_000221 uo:UO_0000064 ;
+            sio:SIO_000300 1.024 ] ;
     skos:altLabel "dms53_doxorubicin" ;
     gdsc:dataset_ver "17.3" ;
-    gdsc:ic50_results_id "169396" .
+    gdsc:ic50_results_id "169396" ;
+    gdsc:target_pathway "DNA replication" .
 
-<https://www.cancerrxgene.org/translation/links/drug/169397> a tgo:ChemicalCompound ;
-    rdfs:label "Etoposide" ;
+<https://www.cancerrxgene.org/translation/links/drug/169488> a tgo:ChemicalCompound ;
+    rdfs:label "Omipalisib" ;
     sio:SIO_000216 [ a uo:MCIT_C64774 ;
-            sio:SIO_000300 0.95461344 ],
+            sio:SIO_000300 0.98105104 ],
         [ a uo:MI_0641 ;
             sio:SIO_000221 uo:UO_0000064 ;
-            sio:SIO_000300 4.26694136 ] ;
-    skos:altLabel "dms53_etoposide" ;
+            sio:SIO_000300 0.4791483 ],
+        [ a uo:ScreeningMaxConcentration ;
+            sio:SIO_000221 uo:UO_0000064 ;
+            sio:SIO_000300 1.024 ] ;
+    skos:altLabel "dms53_omipalisib" ;
     gdsc:dataset_ver "17.3" ;
-    gdsc:ic50_results_id "169397" .
+    gdsc:ic50_results_id "169488" ;
+    gdsc:target_pathway "PI3K/MTOR signaling" .
 
-<https://www.cancerrxgene.org/translation/links/drug/169398> a tgo:ChemicalCompound ;
-    rdfs:label "Gemcitabine" ;
+<https://www.cancerrxgene.org/translation/links/drug/169670> a tgo:ChemicalCompound ;
+    rdfs:label "SN-38" ;
     sio:SIO_000216 [ a uo:MCIT_C64774 ;
-            sio:SIO_000300 0.8332055 ],
+            sio:SIO_000300 0.64585799 ],
         [ a uo:MI_0641 ;
             sio:SIO_000221 uo:UO_0000064 ;
-            sio:SIO_000300 -0.29261995 ] ;
-    skos:altLabel "dms53_gemcitabine" ;
+            sio:SIO_000300 -4.38066334 ],
+        [ a uo:ScreeningMaxConcentration ;
+            sio:SIO_000221 uo:UO_0000064 ;
+            sio:SIO_000300 0.1 ] ;
+    skos:altLabel "dms53_sn-38" ;
     gdsc:dataset_ver "17.3" ;
-    gdsc:ic50_results_id "169398" .
+    gdsc:ic50_results_id "169670" ;
+    gdsc:target_pathway "DNA replication" .
 
 uo:MCIT_C64774 rdfs:label "AUC" .
 
 uo:MI_0641 rdfs:label "IC50" .
+
+uo:ScreeningMaxConcentration rdfs:label "screening max concentration" .
 
 uo:UO_0000064 rdfs:label "μM" .

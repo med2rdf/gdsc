@@ -28,7 +28,16 @@ def check_raw_file():
 	if not os.path.isfile(get_param(DbName.GDSC, 'in_gdsc_drug_file')[0]):
 		print("GDSC DRUGファイルをpickle化")
 		df = pd.read_csv(get_param(DbName.PRE, 'in_gdsc_drug_file')[0], low_memory=False)
+		df.drop_duplicates(['Drug name', 'Cell line name'], keep=False, inplace=True)
+		df = df.fillna({'Tissue': 'unknown', 'Tissue sub-type': 'unknown', 'TCGA classification': 'unknown'})
 		with open(get_param(DbName.GDSC, 'in_gdsc_drug_file')[0], 'wb') as f:
+			pickle.dump(df, f)
+		del df
+
+	if not os.path.isfile(get_param(DbName.GDSC, 'in_gdsc_anova_file')[0]):
+		print("GDSC ANOVAファイルをpickle化")
+		df = pd.read_csv(get_param(DbName.PRE, 'in_gdsc_anova_file')[0], low_memory=False)
+		with open(get_param(DbName.GDSC, 'in_gdsc_anova_file')[0], 'wb') as f:
 			pickle.dump(df, f)
 		del df
 

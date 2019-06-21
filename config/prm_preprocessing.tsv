@@ -1,3 +1,4 @@
 parameter	value
 in_gdsc_drug_file	../data/gdsc/raw/PANCANCER_IC_Wed Oct 10 03_15_39 2018.csv
+in_gdsc_anova_file	../data/gdsc/raw/PANCANCER_ANOVA_Wed Oct 10 03_46_43 2018.csv
 in_cellosaurus_file	../data/cellosaurus/raw/cellosaurus.txt

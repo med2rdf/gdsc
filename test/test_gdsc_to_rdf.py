@@ -8,19 +8,6 @@ import pickle
 import sys, os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-ic50_tag_list = ["Cell line name",
-		                        "Drug name",
-		                        "Drug Id",
-		                        "IC50",
-		                        "Cosmic sample Id",
-		                        "TCGA classification",
-		                        "Tissue",
-		                        "Tissue sub-type",
-		                        "AUC",
-		                        "Dataset version",
-		                        "IC Result ID"]
-
-
 
 class TestGdscToRDF(TestCase):
 
@@ -28,8 +15,17 @@ class TestGdscToRDF(TestCase):
 		with open(get_param(DbName.GDSC, 'in_gdsc_drug_file')[0], 'rb') as f:
 			self.ic50 = pickle.load(f)
 
-		self.output_path = get_param(DbName.GDSC, 'out_folder')[0] + 'debug_rdf.txt'
+		with open(get_param(DbName.GDSC, 'in_gdsc_anova_file')[0], 'rb') as f:
+			anova = pickle.load(f)
 
+		for name in self.ic50['Drug name'].unique():
+			target = list(anova[anova['drug_name'] == name]['target_pathway'].unique())
+			if len(target) > 1:
+				target.remove('Unclassified')
+
+			self.ic50.loc[self.ic50['Drug name'] == name, 'target_pathway'] = target[0]
+
+		self.output_path = get_param(DbName.GDSC, 'out_folder')[0] + 'debug_rdf.txt'
 		self.__gdsc_ns = Namespace("https://www.cancerrxgene.org/translation/Drug/")
 		self.__skos_ns = Namespace("http://www.w3.org/2004/02/skos/core#")
 		self.sparql = SPARQLWrapper(endpoint='http://sparql.hegroup.org/sparql/', returnFormat='tsv')
@@ -48,10 +44,10 @@ class TestGdscToRDF(TestCase):
 		gtr = GdscToRDF(row)
 		self.graph = gtr.create_gdsc_single_cell_turtle(True)
 
-		expected = [Literal("dms53_doxorubicin"), Literal("dms53_etoposide"), Literal("dms53_gemcitabine")]
+		expected = [Literal("dms53_doxorubicin"), Literal("dms53_sn-38"), Literal("dms53_omipalisib")]
 		result = []
 		for s1, p1, o1 in self.graph.triples((None, self.__skos_ns["altLabel"], None)):
-			if ("_doxorubicin" in o1) | ("_etoposide" in o1) | ("_gemcitabine" in o1):
+			if ("_doxorubicin" in o1) | ("_sn-38" in o1) | ("_omipalisib" in o1):
 				result.append(o1)
 		result.sort()
 		expected.sort()
@@ -63,10 +59,10 @@ class TestGdscToRDF(TestCase):
 		gtr = GdscToRDF(row)
 		self.graph = gtr.create_gdsc_single_cell_turtle(True)
 
-		expected = [Literal("22rv1_doxorubicin"), Literal("22rv1_etoposide"), Literal("22rv1_gemcitabine")]
+		expected = [Literal("22rv1_doxorubicin"), Literal("22rv1_etoposide"), Literal("22rv1_erlotinib")]
 		result = []
 		for s1, p1, o1 in self.graph.triples((None, self.__skos_ns["altLabel"], None)):
-			if ("_doxorubicin" in o1) | ("_etoposide" in o1) | ("_gemcitabine" in o1):
+			if ("_doxorubicin" in o1) | ("_etoposide" in o1) | ("_erlotinib" in o1):
 				result.append(o1)
 		result.sort()
 		expected.sort()

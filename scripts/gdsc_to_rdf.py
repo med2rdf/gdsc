@@ -8,17 +8,19 @@ from scripts.omics_to_rdf import *
 from joblib import delayed
 import re
 
-ic50_tag_list = ["Cell line name",
-                 "Drug name",
-                 "Drug Id",
-				 "IC50",
-				 "Cosmic sample Id",
-				 "TCGA classification",
-				 "Tissue",
-				 "Tissue sub-type",
-				 "AUC",
-				 "Dataset version",
-				 "IC Result ID"]
+tag_list = ["Cell line name",
+            "Drug name",
+            "Drug Id",
+			"IC50",
+			"Cosmic sample Id",
+			"TCGA classification",
+			"Tissue",
+			"Tissue sub-type",
+			"AUC",
+			"Dataset version",
+			"IC Result ID",
+			"Max conc",
+            "target_pathway"]
 
 
 class GdscToRDF(OmicsToRDF):
@@ -40,6 +42,7 @@ class GdscToRDF(OmicsToRDF):
 
 		self.__id_map = None
 		self.__ic50 = ic50_row
+		self.__anova = ic50_row
 
 		self.g = None
 		self.init_graph()
@@ -64,7 +67,17 @@ class GdscToRDF(OmicsToRDF):
 			with open(get_param(DbName.GDSC, 'in_gdsc_drug_file')[0], 'rb') as f:
 				self.__ic50 = pickle.load(f)
 
-			self.__ic50 = self.__ic50.loc[:, ic50_tag_list]
+			with open(get_param(DbName.GDSC, 'in_gdsc_anova_file')[0], 'rb') as f:
+				anova = pickle.load(f)
+
+			for name in ic50['Drug name'].unique():
+				target = list(anova[anova['drug_name'] == name]['target_pathway'].unique())
+				if len(target) > 1:
+					target.remove('Unclassified')
+
+				self.__ic50.loc[self.__ic50['Drug name'] == name, 'target_pathway'] = target[0]
+
+			self.__ic50 = self.__ic50.loc[:, tag_list]
 		return self.__ic50
 
 	@ic50.setter
@@ -105,7 +118,7 @@ class GdscToRDF(OmicsToRDF):
 
 	def create_gdsc_single_cell_turtle(self, is_debug=False):
 		if is_debug:
-			target_drug = ["Doxorubicin", "Etoposide", "Gemcitabine"]
+			target_drug = ["Doxorubicin", "SN-38", "Omipalisib"]
 			self.ic50 = self.ic50[self.ic50["Drug name"].isin(target_drug)]
 
 		cosmic = str(self.ic50.loc[:, 'Cosmic sample Id'].values[0])
@@ -149,6 +162,9 @@ class GdscToRDF(OmicsToRDF):
 		self.g.add((self.__drug_ns[str(item['IC Result ID'])], self.__gdsc_ns['dataset_ver'], Literal(str(item['Dataset version']))))
 		self.g.add((self.__drug_ns[str(item['IC Result ID'])], self.__gdsc_ns["ic50_results_id"], Literal(str(item['IC Result ID']))))
 		self.g.add((self.__drug_ns[str(item['IC Result ID'])], self.__sio_ns["SIO_000216"], BNode((str(item['IC Result ID'])) + 'ic50')))
+		# self.g.add((self.__drug_ns[str(item['IC Result ID'])], self.__drug_ns["chebi_id"], Literal(libchebipy.search(item['Drug name'], True)[0].get_id()[len('CHEBI:'):])))
+		self.g.add((self.__drug_ns[str(item['IC Result ID'])], self.__gdsc_ns['target_pathway'],Literal(item['target_pathway'])))
+
 		self.g.add((BNode(str(item['IC Result ID']) + 'ic50'), self.__sio_ns['SIO_000300'], Literal(item['IC50'], datatype=XSD.decimal)))
 		self.g.add((BNode(str(item['IC Result ID']) + 'ic50'), self.__sio_ns['SIO_000221'], self.__uo_ns["UO_0000064"]))
 		self.g.add((BNode(str(item['IC Result ID']) + 'ic50'), RDF["type"], self.__uo_ns["MI_0641"]))
@@ -158,6 +174,13 @@ class GdscToRDF(OmicsToRDF):
 		self.g.add((BNode(str(item['IC Result ID']) + 'auc'), self.__sio_ns['SIO_000300'], Literal(item['AUC'], datatype=XSD.decimal)))
 		self.g.add((BNode(str(item['IC Result ID']) + 'auc'), RDF["type"], self.__uo_ns["MCIT_C64774"]))
 		self.g.add((self.__uo_ns["MCIT_C64774"], RDFS['label'], Literal('AUC')))
+
+		self.g.add((self.__drug_ns[str(item['IC Result ID'])], self.__sio_ns["SIO_000216"], BNode((str(item['IC Result ID'])) + 'max_conc')))
+		self.g.add((BNode(str(item['IC Result ID']) + 'max_conc'), self.__sio_ns['SIO_000300'], Literal(item['Max conc'], datatype=XSD.decimal)))
+		self.g.add((BNode(str(item['IC Result ID']) + 'max_conc'), self.__sio_ns['SIO_000221'], self.__uo_ns["UO_0000064"]))
+		self.g.add((BNode(str(item['IC Result ID']) + 'max_conc'), RDF["type"], self.__uo_ns["ScreeningMaxConcentration"]))
+		self.g.add((self.__uo_ns["ScreeningMaxConcentration"], RDFS['label'], Literal('screening max concentration')))
+
 
 	def get_cell_line_id(self, cosmic):
 		rtrn = self.id_map[self.id_map["GDSC"] == cosmic]["ID"]
@@ -173,6 +196,16 @@ def process(row):
 if __name__ == '__main__':
 	with open(get_param(DbName.GDSC, 'in_gdsc_drug_file')[0], 'rb') as f:
 		ic50 = pickle.load(f)
+
+	with open(get_param(DbName.GDSC, 'in_gdsc_anova_file')[0], 'rb') as f:
+		anova = pickle.load(f)
+
+	for name in ic50['Drug name'].unique():
+		target = list(anova[anova['drug_name'] == name]['target_pathway'].unique())
+		if len(target) > 1:
+			target.remove('Unclassified')
+
+		ic50.loc[ic50['Drug name'] == name, 'target_pathway'] = target[0]
 
 	jobs = int(get_param(DbName.COMMON, 'n_jobs')[0])
 	cell_line_list = list(set(ic50['Cosmic sample Id']))
