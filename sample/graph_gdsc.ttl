@@ -1,8 +1,8 @@
 @prefix bao: <http://www.bioassayontology.org/bao#> .
 @prefix dct: <http://purl.org/dc/terms/> .
 @prefix gdsc: <https://www.cancerrxgene.org/translation/gdsc/> .
-@prefix gdscc: <https://www.cancerrxgene.org/translation/links/cell_line/> .
-@prefix gdscd: <https://www.cancerrxgene.org/translation/links/drug/> .
+@prefix gdscc: <https://www.cancerrxgene.org/translation/CellLine/> .
+@prefix gdscd: <https://www.cancerrxgene.org/translation/Drug/> .
 @prefix m2r: <http://med2rdf/org/ontology/med2rdf#> .
 @prefix ontology: <https://www.cancerrxgene.org/translation/gdsc/ontology#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
@@ -15,68 +15,28 @@
 @prefix xml: <http://www.w3.org/XML/1998/namespace> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-gdscc:DMS53 a m2r:CellLine,
-        uo:BTO_0005668 ;
-    rdfs:label "907295" ;
-    m2r:drug [ a tgo:ExperimentalCondition,
-                bao:ExperimentalSpecification ;
-            m2r:drug <https://www.cancerrxgene.org/translation/links/drug/169396>,
-                <https://www.cancerrxgene.org/translation/links/drug/169488>,
-                <https://www.cancerrxgene.org/translation/links/drug/169670> ;
-            tgo:testType "in vitro" ] ;
-    ontology:tcga_classification "SCLC" ;
+<https://www.cancerrxgene.org/translation/Drug/1> a m2r:Drug ;
+    rdfs:label "Erlotinib" ;
+    gdsc:target_pathway "EGFR signaling" .
+
+<https://www.cancerrxgene.org/translation/CellLine/687984> a m2r:CellLine ;
+    rdfs:label "DMS153" ;
+    m2r:has_assay [ a gdsc:Assay ;
+            m2r:drug <https://www.cancerrxgene.org/translation/Drug/1> ;
+            m2r:sample <https://www.cancerrxgene.org/translation/CellLine/687984> ;
+            tgo:testType "in vitro" ;
+            dct:identifier "25531" ;
+            sio:SIO_000216 [ a uo:MCIT_C64774 ;
+                    sio:SIO_000300 0.97999094 ],
+                [ a uo:ScreeningMaxConcentration ;
+                    sio:SIO_000221 uo:UO_0000064 ;
+                    sio:SIO_000300 2.0 ],
+                [ a uo:MI_0641 ;
+                    sio:SIO_000221 uo:UO_0000064 ;
+                    sio:SIO_000300 4.47441683 ] ;
+            gdsc:dataset_ver "17.5" ];
+    dct:identifier 687984.0 ;
+    ontology:tcga_classification "UNCLASSIFIED" ;
     ontology:tissue "lung" ;
     ontology:tissue_subtype "lung_small_cell_carcinoma" .
 
-<https://www.cancerrxgene.org/translation/links/drug/169396> a tgo:ChemicalCompound ;
-    rdfs:label "Doxorubicin" ;
-    sio:SIO_000216 [ a uo:MCIT_C64774 ;
-            sio:SIO_000300 0.89359217 ],
-        [ a uo:MI_0641 ;
-            sio:SIO_000221 uo:UO_0000064 ;
-            sio:SIO_000300 0.39437767 ],
-        [ a uo:ScreeningMaxConcentration ;
-            sio:SIO_000221 uo:UO_0000064 ;
-            sio:SIO_000300 1.024 ] ;
-    skos:altLabel "dms53_doxorubicin" ;
-    gdsc:dataset_ver "17.3" ;
-    gdsc:ic50_results_id "169396" ;
-    gdsc:target_pathway "DNA replication" .
-
-<https://www.cancerrxgene.org/translation/links/drug/169488> a tgo:ChemicalCompound ;
-    rdfs:label "Omipalisib" ;
-    sio:SIO_000216 [ a uo:MCIT_C64774 ;
-            sio:SIO_000300 0.98105104 ],
-        [ a uo:MI_0641 ;
-            sio:SIO_000221 uo:UO_0000064 ;
-            sio:SIO_000300 0.4791483 ],
-        [ a uo:ScreeningMaxConcentration ;
-            sio:SIO_000221 uo:UO_0000064 ;
-            sio:SIO_000300 1.024 ] ;
-    skos:altLabel "dms53_omipalisib" ;
-    gdsc:dataset_ver "17.3" ;
-    gdsc:ic50_results_id "169488" ;
-    gdsc:target_pathway "PI3K/MTOR signaling" .
-
-<https://www.cancerrxgene.org/translation/links/drug/169670> a tgo:ChemicalCompound ;
-    rdfs:label "SN-38" ;
-    sio:SIO_000216 [ a uo:MCIT_C64774 ;
-            sio:SIO_000300 0.64585799 ],
-        [ a uo:MI_0641 ;
-            sio:SIO_000221 uo:UO_0000064 ;
-            sio:SIO_000300 -4.38066334 ],
-        [ a uo:ScreeningMaxConcentration ;
-            sio:SIO_000221 uo:UO_0000064 ;
-            sio:SIO_000300 0.1 ] ;
-    skos:altLabel "dms53_sn-38" ;
-    gdsc:dataset_ver "17.3" ;
-    gdsc:ic50_results_id "169670" ;
-    gdsc:target_pathway "DNA replication" .
-
-uo:MCIT_C64774 rdfs:label "AUC" .
-
-uo:MI_0641 rdfs:label "IC50" .
-
-uo:ScreeningMaxConcentration rdfs:label "screening max concentration" .
-
-uo:UO_0000064 rdfs:label "μM" .
