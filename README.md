@@ -3,12 +3,13 @@ GDSC RDF converter
 
 ## Get Dataset  
 Download data from the following web site .
-* [GDSC](https://www.cancerrxgene.org/downloads)
+* [GDSC](https://www.cancerrxgene.org/downloads)　["PANCANCER_IC"](https://www.cancerrxgene.org/translation/drug/download#ic50) ["PANCANCER_ANOVA"](https://www.cancerrxgene.org/translation/drug/download#anova)
+
 ```
 - PANCANCER_IC_Wed Oct 10 03_15_39 2018.csv
 - PANCANCER_ANOVA_Wed Oct 10 03_46_43 2018.csv
 ```
-
+ 
 * [Cellosaurus](https://web.expasy.org/cellosaurus/)
 ```
 - cellosaurus.txt
