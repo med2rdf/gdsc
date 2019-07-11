@@ -4,14 +4,13 @@
 @prefix gdscc: <https://www.cancerrxgene.org/translation/CellLine/> .
 @prefix gdscd: <https://www.cancerrxgene.org/translation/Drug/> .
 @prefix m2r: <http://med2rdf/org/ontology/med2rdf#> .
+@prefix obo: <http://purl.obolibrary.org/obo/> .
 @prefix ontology: <https://www.cancerrxgene.org/translation/gdsc/ontology#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix sio: <http://semanticscience.org/resource/> .
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
-@prefix tgexpc: <http://purl.jp/bio/101/opentggates/ExperimentalCondition/> .
 @prefix tgo: <http://purl.jp/bio/101/opentggates/ontology/> .
-@prefix uo: <http://purl.obolibrary.org/obo/> .
 @prefix xml: <http://www.w3.org/XML/1998/namespace> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
@@ -24,18 +23,17 @@
     m2r:has_assay [ a gdsc:Assay ;
             m2r:drug <https://www.cancerrxgene.org/translation/Drug/1> ;
             m2r:sample <https://www.cancerrxgene.org/translation/CellLine/687984> ;
-            tgo:testType "in vitro" ;
             dct:identifier "25531" ;
-            sio:SIO_000216 [ a uo:MCIT_C64774 ;
+            sio:SIO_000216 [ a bao:BAO_0002120 ;
                     sio:SIO_000300 0.97999094 ],
-                [ a uo:ScreeningMaxConcentration ;
-                    sio:SIO_000221 uo:UO_0000064 ;
+                [ a sio:SIO_001088 ;
                     sio:SIO_000300 2.0 ],
-                [ a uo:MI_0641 ;
-                    sio:SIO_000221 uo:UO_0000064 ;
-                    sio:SIO_000300 4.47441683 ] ;
+                [ a bao:BAO_0000190 ;
+                    sio:SIO_000221 obo:UO_0000064 ;
+                    sio:SIO_000300 87.7434161586443 ] ;
+            bao:BAO_0002854 bao:BAO_0020008 ;
             gdsc:dataset_ver "17.5" ];
-    dct:identifier 687984.0 ;
+    dct:identifier "687984" ;
     ontology:tcga_classification "UNCLASSIFIED" ;
     ontology:tissue "lung" ;
     ontology:tissue_subtype "lung_small_cell_carcinoma" .

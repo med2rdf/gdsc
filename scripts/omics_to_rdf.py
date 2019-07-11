@@ -90,13 +90,13 @@ class OmicsToRDF(object):
 
 	def get_bto_id(self, cell_id):
 		self.sparql.setQuery("""                                                                                                                                                                      
-				    PREFIX obo: <http://www.geneontology.org/formats/oboInOwl#>
+				    PREFIX go: <http://www.geneontology.org/formats/oboInOwl#>
 				    SELECT DISTINCT ?x
 				    from <http://purl.obolibrary.org/obo/merged/BTO>
 				    WHERE
 				    {
 				    {?x rdfs:label  "%s cell"^^<http://www.w3.org/2001/XMLSchema#string>.}
-				    UNION { ?x obo:hasRelatedSynonym  "%s cell"^^<http://www.w3.org/2001/XMLSchema#string>. }
+				    UNION { ?x go:hasRelatedSynonym  "%s cell"^^<http://www.w3.org/2001/XMLSchema#string>. }
 				    }                                                                                                                    
 				""" % (cell_id, cell_id))
 

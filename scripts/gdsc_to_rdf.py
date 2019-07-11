@@ -7,6 +7,7 @@ import pickle
 from scripts.omics_to_rdf import *
 from joblib import delayed
 import re
+import math
 
 tag_list = ["Cell line name",
             "Drug name",
@@ -27,16 +28,14 @@ class GdscToRDF(OmicsToRDF):
 	def __init__(self, ic50_row, drugHash):
 		super().__init__()
 		self.__result_path = get_param(DbName.GDSC, 'out_folder')[0]
-		self.__gdsc_ns = Namespace("https://www.cancerrxgene.org/translation/gdsc/")
 		self.__cellline_ns = Namespace("https://www.cancerrxgene.org/translation/CellLine/")
 		self.__drug_ns = Namespace("https://www.cancerrxgene.org/translation/Drug/")
 		self.__cellosaurus_ns = Namespace("https://web.expasy.org/cgi-bin/cellosaurus/")
 		self.__m2r_ns = Namespace("http://med2rdf/org/ontology/med2rdf#")
-		self.__ontology_ns = Namespace("https://www.cancerrxgene.org/translation/gdsc/ontology#")
+		self.__ontology_ns = Namespace("https://purl.jp/bio/10/gdsc/ontology#")
 		self.__sio_ns = Namespace("http://semanticscience.org/resource/")
-		self.__uo_ns = Namespace("http://purl.obolibrary.org/obo/")
+		self.__obo_ns = Namespace("http://purl.obolibrary.org/obo/")
 		self.__tgo_ns = Namespace("http://purl.jp/bio/101/opentggates/ontology/")
-		self.__tgexpc_ns = Namespace("http://purl.jp/bio/101/opentggates/ExperimentalCondition/")
 		self.__bao_ns = Namespace("http://www.bioassayontology.org/bao#")
 		self.__skos_ns = Namespace("http://www.w3.org/2004/02/skos/core#")
 
@@ -106,7 +105,6 @@ class GdscToRDF(OmicsToRDF):
 			self.g.close()
 
 		self.g = Graph()
-		self.g.bind("gdsc", self.__gdsc_ns)
 		self.g.bind("gdscc", self.__cellline_ns)
 		self.g.bind("gdscd", self.__drug_ns)
 		self.g.bind("m2r", self.__m2r_ns)
@@ -114,9 +112,8 @@ class GdscToRDF(OmicsToRDF):
 		self.g.bind("dct", DCTERMS)
 		self.g.bind("xsd", XSD)
 		self.g.bind("sio", self.__sio_ns)
-		self.g.bind("uo", self.__uo_ns)
+		self.g.bind("obo", self.__obo_ns)
 		self.g.bind("tgo", self.__tgo_ns)
-		self.g.bind("tgexpc", self.__tgexpc_ns)
 		self.g.bind("bao", self.__bao_ns)
 		self.g.bind("skos", self.__skos_ns)
 
@@ -145,43 +142,42 @@ class GdscToRDF(OmicsToRDF):
 	def create_cell_line_turtle(self, cell_id, cell_name):
 		bot_id = self.get_bto_id(cell_id)
 		if not bot_id == 'NO ID':
-			self.g.add((self.__cellline_ns[cell_id], RDF["type"], self.__uo_ns[bot_id]))
+			self.g.add((self.__cellline_ns[cell_id], RDF["type"], self.__obo_ns[bot_id]))
 
 		self.g.add((self.__cellline_ns[cell_id], RDF["type"], self.__m2r_ns["CellLine"]))
 		self.g.add((self.__cellline_ns[cell_id], RDFS["label"], Literal(cell_name)))
-		self.g.add((self.__cellline_ns[cell_id], DCTERMS['identifier'], Literal(cell_id, datatype=XSD.decimal)))
+		self.g.add((self.__cellline_ns[cell_id], DCTERMS['identifier'], Literal(cell_id)))
 		self.g.add((self.__cellline_ns[cell_id], self.__ontology_ns['tcga_classification'], Literal(self.ic50['TCGA classification'].values[0])))
-		self.g.add((self.__cellline_ns[cell_id], self.__ontology_ns['tissue'], Literal(self.ic50['Tissue'].values[0])))
-		self.g.add((self.__cellline_ns[cell_id], self.__ontology_ns['tissue_subtype'], Literal(self.ic50['Tissue sub-type'].values[0])))
+		self.g.add((self.__cellline_ns[cell_id], self.__m2r_ns['site_primary'], Literal(self.ic50['Tissue'].values[0])))
+		self.g.add((self.__cellline_ns[cell_id], self.__m2r_ns['site'], Literal(self.ic50['Tissue sub-type'].values[0])))
 
 	def create_drug_turtle(self, cellosaurus, drug_id, drug_name, target_pathway):
 		self.g.add((self.__drug_ns[drug_id], RDF["type"], self.__m2r_ns["Drug"]))
 		self.g.add((self.__drug_ns[drug_id], RDFS["label"], Literal(drug_name)))
 		# self.g.add((self.__drug_ns[drug_id], self.__drug_ns["chebi_id"], Literal(libchebipy.search(drug_name, True)[0].get_id()[len('CHEBI:'):])))
 		if target_pathway:
-			self.g.add((self.__drug_ns[drug_id], self.__gdsc_ns['target_pathway'], Literal(target_pathway)))
+			self.g.add((self.__drug_ns[drug_id], self.__ontology_ns['target_pathway'], Literal(target_pathway)))
 
 	def create_experiment_turtle(self, cell_id, item):
 		drug_id = str(item['Drug Id'])
+		ic50_value = math.exp(item['IC50'])
 		self.g.add((self.__cellline_ns[cell_id], self.__m2r_ns["has_assay"], BNode(str(item['IC Result ID']))))
-		self.g.add((BNode(str(item['IC Result ID'])), RDF["type"], self.__gdsc_ns["Assay"]))
-		self.g.add((BNode(str(item['IC Result ID'])), RDF["type"], self.__tgo_ns["ExperimentalCondition"]))
-		self.g.add((BNode(str(item['IC Result ID'])), self.__tgo_ns['testType'], Literal('in vitro')))
+		self.g.add((BNode(str(item['IC Result ID'])), RDF["type"], self.__ontology_ns["Assay"]))
+		self.g.add((BNode(str(item['IC Result ID'])), self.__bao_ns['BAO_0002854'], self.__bao_ns['BAO_0020008']))
 		self.g.add((BNode(str(item['IC Result ID'])), self.__m2r_ns["sample"], self.__cellline_ns[cell_id]))
 		self.g.add((BNode(str(item['IC Result ID'])), self.__m2r_ns["drug"], self.__drug_ns[drug_id]))
-		self.g.add((BNode(str(item['IC Result ID'])), self.__gdsc_ns['dataset_ver'], Literal(str(item['Dataset version']))))
+		self.g.add((BNode(str(item['IC Result ID'])), self.__ontology_ns['dataset_ver'], Literal(str(item['Dataset version']))))
 		self.g.add((BNode(str(item['IC Result ID'])), DCTERMS['identifier'], Literal(str(item['IC Result ID']))))
 		self.g.add((BNode(str(item['IC Result ID'])), self.__sio_ns["SIO_000216"], BNode(str(item['IC Result ID']) + 'res')))
-		self.g.add((BNode(str(item['IC Result ID']) + 'res'), self.__sio_ns['SIO_000300'], Literal(item['IC50'], datatype=XSD.decimal)))
-		self.g.add((BNode(str(item['IC Result ID']) + 'res'), self.__sio_ns['SIO_000221'], self.__uo_ns["UO_0000064"]))
-		self.g.add((BNode(str(item['IC Result ID']) + 'res'), RDF["type"], self.__uo_ns["MI_0641"]))
+		self.g.add((BNode(str(item['IC Result ID']) + 'res'), self.__sio_ns['SIO_000300'], Literal(ic50_value, datatype=XSD.decimal)))
+		self.g.add((BNode(str(item['IC Result ID']) + 'res'), self.__sio_ns['SIO_000221'], self.__obo_ns["UO_0000064"]))
+		self.g.add((BNode(str(item['IC Result ID']) + 'res'), RDF["type"], self.__bao_ns["BAO_0000190"]))
 		self.g.add((BNode(str(item['IC Result ID'])), self.__sio_ns["SIO_000216"], BNode(str(item['IC Result ID']) + 'auc')))
 		self.g.add((BNode(str(item['IC Result ID']) + 'auc'), self.__sio_ns['SIO_000300'], Literal(item['AUC'], datatype=XSD.decimal)))
-		self.g.add((BNode(str(item['IC Result ID']) + 'auc'), RDF["type"], self.__uo_ns["MCIT_C64774"]))
+		self.g.add((BNode(str(item['IC Result ID']) + 'auc'), RDF["type"], self.__bao_ns["BAO_0002120"]))
 		self.g.add((BNode(str(item['IC Result ID'])), self.__sio_ns["SIO_000216"], BNode((str(item['IC Result ID'])) + 'max_conc')))
 		self.g.add((BNode(str(item['IC Result ID']) + 'max_conc'), self.__sio_ns['SIO_000300'], Literal(item['Max conc'], datatype=XSD.decimal)))
-		self.g.add((BNode(str(item['IC Result ID']) + 'max_conc'), self.__sio_ns['SIO_000221'], self.__uo_ns["UO_0000064"]))
-		self.g.add((BNode(str(item['IC Result ID']) + 'max_conc'), RDF["type"], self.__uo_ns["ScreeningMaxConcentration"]))
+		self.g.add((BNode(str(item['IC Result ID']) + 'max_conc'), RDF["type"], self.__sio_ns["SIO_001088"]))
 
 
 	def get_cell_line_id(self, cosmic):
