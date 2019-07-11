@@ -24,12 +24,12 @@ tag_list = ["Cell line name",
 
 
 class GdscToRDF(OmicsToRDF):
-	def __init__(self, ic50_row):
+	def __init__(self, ic50_row, drugHash):
 		super().__init__()
 		self.__result_path = get_param(DbName.GDSC, 'out_folder')[0]
 		self.__gdsc_ns = Namespace("https://www.cancerrxgene.org/translation/gdsc/")
-		self.__cellline_ns = Namespace("https://www.cancerrxgene.org/translation/links/cell_line/")
-		self.__drug_ns = Namespace("https://www.cancerrxgene.org/translation/links/drug/")
+		self.__cellline_ns = Namespace("https://www.cancerrxgene.org/translation/CellLine/")
+		self.__drug_ns = Namespace("https://www.cancerrxgene.org/translation/Drug/")
 		self.__cellosaurus_ns = Namespace("https://web.expasy.org/cgi-bin/cellosaurus/")
 		self.__m2r_ns = Namespace("http://med2rdf/org/ontology/med2rdf#")
 		self.__ontology_ns = Namespace("https://www.cancerrxgene.org/translation/gdsc/ontology#")
@@ -43,6 +43,7 @@ class GdscToRDF(OmicsToRDF):
 		self.__id_map = None
 		self.__ic50 = ic50_row
 		self.__anova = ic50_row
+		self.drugHash = drugHash
 
 		self.g = None
 		self.init_graph()
@@ -70,14 +71,17 @@ class GdscToRDF(OmicsToRDF):
 			with open(get_param(DbName.GDSC, 'in_gdsc_anova_file')[0], 'rb') as f:
 				anova = pickle.load(f)
 
-			for name in ic50['Drug name'].unique():
-				target = list(anova[anova['drug_name'] == name]['target_pathway'].unique())
+			self.drugHash = {}
+			for index, item in self.__ic50.iterrows():
+				drug_id = str(item['Drug Id'])
+				drug_name = item['Drug name']
+				self.drugHash[drug_id] = [drug_name,None]
+			for drug_id, [drug_name, target_pathway] in self.drugHash.items():
+				target = list(anova[anova['drug_name'] == drug_name]['target_pathway'].unique())
 				if len(target) > 1:
 					target.remove('Unclassified')
 
-				self.__ic50.loc[self.__ic50['Drug name'] == name, 'target_pathway'] = target[0]
-
-			self.__ic50 = self.__ic50.loc[:, tag_list]
+				self.drugHash[drug_id][1] = target[0]
 		return self.__ic50
 
 	@ic50.setter
@@ -126,60 +130,58 @@ class GdscToRDF(OmicsToRDF):
 		if id_name == 'NO_ID':
 			return self.g
 
-		self.create_cell_line_turtle(cosmic, id_name)
+		self.create_cell_line_turtle(cosmic,id_name)
+		for drug_id, [drug_name,target_pathway] in self.drugHash.items():
+			self.create_drug_turtle(cosmic, drug_id, drug_name, target_pathway)
 
 		for index, item in self.ic50.iterrows():
-			self.create_experiment_turtle(cosmic, id_name)
-			self.create_drug_turtle(cosmic, id_name, item)
+			self.create_experiment_turtle(cosmic, item)
 
 		if not is_debug:
 			self.save_turtle(id_name)
 
 		return self.g
 
-	def create_cell_line_turtle(self, cosmic, cell_id):
+	def create_cell_line_turtle(self, cell_id, cell_name):
 		bot_id = self.get_bto_id(cell_id)
 		if not bot_id == 'NO ID':
 			self.g.add((self.__cellline_ns[cell_id], RDF["type"], self.__uo_ns[bot_id]))
 
 		self.g.add((self.__cellline_ns[cell_id], RDF["type"], self.__m2r_ns["CellLine"]))
-		self.g.add((self.__cellline_ns[cell_id], RDFS["label"], Literal("{}".format(cosmic))))
+		self.g.add((self.__cellline_ns[cell_id], RDFS["label"], Literal(cell_name)))
+		self.g.add((self.__cellline_ns[cell_id], DCTERMS['identifier'], Literal(cell_id, datatype=XSD.decimal)))
 		self.g.add((self.__cellline_ns[cell_id], self.__ontology_ns['tcga_classification'], Literal(self.ic50['TCGA classification'].values[0])))
 		self.g.add((self.__cellline_ns[cell_id], self.__ontology_ns['tissue'], Literal(self.ic50['Tissue'].values[0])))
 		self.g.add((self.__cellline_ns[cell_id], self.__ontology_ns['tissue_subtype'], Literal(self.ic50['Tissue sub-type'].values[0])))
 
-	def create_experiment_turtle(self, cosmic, cell_id):
-		self.g.add((self.__cellline_ns[cell_id], self.__m2r_ns["drug"], BNode(cosmic + 'experiment')))
-		self.g.add((BNode(cosmic + 'experiment'), RDF["type"], self.__tgo_ns["ExperimentalCondition"]))
-		self.g.add((BNode(cosmic + 'experiment'), self.__tgo_ns['testType'], Literal('in vitro')))
-		self.g.add((BNode(cosmic + 'experiment'), RDF["type"], self.__bao_ns["ExperimentalSpecification"]))
+	def create_drug_turtle(self, cellosaurus, drug_id, drug_name, target_pathway):
+		self.g.add((self.__drug_ns[drug_id], RDF["type"], self.__m2r_ns["Drug"]))
+		self.g.add((self.__drug_ns[drug_id], RDFS["label"], Literal(drug_name)))
+		# self.g.add((self.__drug_ns[drug_id], self.__drug_ns["chebi_id"], Literal(libchebipy.search(drug_name, True)[0].get_id()[len('CHEBI:'):])))
+		if target_pathway:
+			self.g.add((self.__drug_ns[drug_id], self.__gdsc_ns['target_pathway'], Literal(target_pathway)))
 
-	def create_drug_turtle(self, cosmic, cellosaurus, item):
-		self.g.add((BNode(cosmic + 'experiment'), self.__m2r_ns["drug"], self.__drug_ns[str(item['IC Result ID'])]))
-		self.g.add((self.__drug_ns[str(item['IC Result ID'])], RDF["type"], self.__tgo_ns["ChemicalCompound"]))
-		self.g.add((self.__drug_ns[str(item['IC Result ID'])], self.__skos_ns["altLabel"], Literal(cellosaurus.lower() + '_' + item['Drug name'].lower())))
-		self.g.add((self.__drug_ns[str(item['IC Result ID'])], RDFS["label"], Literal(item['Drug name'])))
-		self.g.add((self.__drug_ns[str(item['IC Result ID'])], self.__gdsc_ns['dataset_ver'], Literal(str(item['Dataset version']))))
-		self.g.add((self.__drug_ns[str(item['IC Result ID'])], self.__gdsc_ns["ic50_results_id"], Literal(str(item['IC Result ID']))))
-		self.g.add((self.__drug_ns[str(item['IC Result ID'])], self.__sio_ns["SIO_000216"], BNode((str(item['IC Result ID'])) + 'ic50')))
-		# self.g.add((self.__drug_ns[str(item['IC Result ID'])], self.__drug_ns["chebi_id"], Literal(libchebipy.search(item['Drug name'], True)[0].get_id()[len('CHEBI:'):])))
-		self.g.add((self.__drug_ns[str(item['IC Result ID'])], self.__gdsc_ns['target_pathway'],Literal(item['target_pathway'])))
-
-		self.g.add((BNode(str(item['IC Result ID']) + 'ic50'), self.__sio_ns['SIO_000300'], Literal(item['IC50'], datatype=XSD.decimal)))
-		self.g.add((BNode(str(item['IC Result ID']) + 'ic50'), self.__sio_ns['SIO_000221'], self.__uo_ns["UO_0000064"]))
-		self.g.add((BNode(str(item['IC Result ID']) + 'ic50'), RDF["type"], self.__uo_ns["MI_0641"]))
-		self.g.add((self.__uo_ns["MI_0641"], RDFS['label'], Literal('IC50')))
-		self.g.add((self.__uo_ns["UO_0000064"], RDFS['label'], Literal('μM')))
-		self.g.add((self.__drug_ns[str(item['IC Result ID'])], self.__sio_ns["SIO_000216"], BNode(str(item['IC Result ID']) + 'auc')))
+	def create_experiment_turtle(self, cell_id, item):
+		drug_id = str(item['Drug Id'])
+		self.g.add((self.__cellline_ns[cell_id], self.__m2r_ns["has_assay"], BNode(str(item['IC Result ID']))))
+		self.g.add((BNode(str(item['IC Result ID'])), RDF["type"], self.__gdsc_ns["Assay"]))
+		self.g.add((BNode(str(item['IC Result ID'])), RDF["type"], self.__tgo_ns["ExperimentalCondition"]))
+		self.g.add((BNode(str(item['IC Result ID'])), self.__tgo_ns['testType'], Literal('in vitro')))
+		self.g.add((BNode(str(item['IC Result ID'])), self.__m2r_ns["sample"], self.__cellline_ns[cell_id]))
+		self.g.add((BNode(str(item['IC Result ID'])), self.__m2r_ns["drug"], self.__drug_ns[drug_id]))
+		self.g.add((BNode(str(item['IC Result ID'])), self.__gdsc_ns['dataset_ver'], Literal(str(item['Dataset version']))))
+		self.g.add((BNode(str(item['IC Result ID'])), DCTERMS['identifier'], Literal(str(item['IC Result ID']))))
+		self.g.add((BNode(str(item['IC Result ID'])), self.__sio_ns["SIO_000216"], BNode(str(item['IC Result ID']) + 'res')))
+		self.g.add((BNode(str(item['IC Result ID']) + 'res'), self.__sio_ns['SIO_000300'], Literal(item['IC50'], datatype=XSD.decimal)))
+		self.g.add((BNode(str(item['IC Result ID']) + 'res'), self.__sio_ns['SIO_000221'], self.__uo_ns["UO_0000064"]))
+		self.g.add((BNode(str(item['IC Result ID']) + 'res'), RDF["type"], self.__uo_ns["MI_0641"]))
+		self.g.add((BNode(str(item['IC Result ID'])), self.__sio_ns["SIO_000216"], BNode(str(item['IC Result ID']) + 'auc')))
 		self.g.add((BNode(str(item['IC Result ID']) + 'auc'), self.__sio_ns['SIO_000300'], Literal(item['AUC'], datatype=XSD.decimal)))
 		self.g.add((BNode(str(item['IC Result ID']) + 'auc'), RDF["type"], self.__uo_ns["MCIT_C64774"]))
-		self.g.add((self.__uo_ns["MCIT_C64774"], RDFS['label'], Literal('AUC')))
-
-		self.g.add((self.__drug_ns[str(item['IC Result ID'])], self.__sio_ns["SIO_000216"], BNode((str(item['IC Result ID'])) + 'max_conc')))
+		self.g.add((BNode(str(item['IC Result ID'])), self.__sio_ns["SIO_000216"], BNode((str(item['IC Result ID'])) + 'max_conc')))
 		self.g.add((BNode(str(item['IC Result ID']) + 'max_conc'), self.__sio_ns['SIO_000300'], Literal(item['Max conc'], datatype=XSD.decimal)))
 		self.g.add((BNode(str(item['IC Result ID']) + 'max_conc'), self.__sio_ns['SIO_000221'], self.__uo_ns["UO_0000064"]))
 		self.g.add((BNode(str(item['IC Result ID']) + 'max_conc'), RDF["type"], self.__uo_ns["ScreeningMaxConcentration"]))
-		self.g.add((self.__uo_ns["ScreeningMaxConcentration"], RDFS['label'], Literal('screening max concentration')))
 
 
 	def get_cell_line_id(self, cosmic):
@@ -188,8 +190,8 @@ class GdscToRDF(OmicsToRDF):
 			return 'NO_ID'
 		return rtrn.values[0].replace(' ', '')
 
-def process(row):
-	gtr = GdscToRDF(row)
+def process(row,drugHash):
+	gtr = GdscToRDF(row,drugHash)
 	gtr.create_gdsc_single_cell_turtle()
 	del gtr
 
@@ -200,15 +202,20 @@ if __name__ == '__main__':
 	with open(get_param(DbName.GDSC, 'in_gdsc_anova_file')[0], 'rb') as f:
 		anova = pickle.load(f)
 
-	for name in ic50['Drug name'].unique():
-		target = list(anova[anova['drug_name'] == name]['target_pathway'].unique())
+	drugHash = {}
+	for index, item in ic50.iterrows():
+		drug_id = str(item['Drug Id'])
+		drug_name = item['Drug name']
+		drugHash[drug_id] = [drug_name,None]
+	for drug_id, [drug_name,target_pathway] in drugHash.items():
+		target = list(anova[anova['drug_name'] == drug_name]['target_pathway'].unique())
 		if len(target) > 1:
 			target.remove('Unclassified')
 
-		ic50.loc[ic50['Drug name'] == name, 'target_pathway'] = target[0]
+		drugHash[drug_id][1] = target[0]
 
 	jobs = int(get_param(DbName.COMMON, 'n_jobs')[0])
 	cell_line_list = list(set(ic50['Cosmic sample Id']))
 	print("GDSCデータからRDF/turtleファイルに変換")
 	aprun = ParallelExecutor(n_jobs=jobs)
-	aprun(total=len(cell_line_list))(delayed(process)(ic50[ic50['Cosmic sample Id'] == cosmic]) for cosmic in cell_line_list)
+	aprun(total=len(cell_line_list))(delayed(process)(ic50[ic50['Cosmic sample Id'] == cosmic],drugHash) for cosmic in cell_line_list)
