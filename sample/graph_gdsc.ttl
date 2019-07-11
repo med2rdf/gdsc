@@ -1,11 +1,10 @@
 @prefix bao: <http://www.bioassayontology.org/bao#> .
 @prefix dct: <http://purl.org/dc/terms/> .
-@prefix gdsc: <https://www.cancerrxgene.org/translation/gdsc/> .
 @prefix gdscc: <https://www.cancerrxgene.org/translation/CellLine/> .
 @prefix gdscd: <https://www.cancerrxgene.org/translation/Drug/> .
 @prefix m2r: <http://med2rdf/org/ontology/med2rdf#> .
 @prefix obo: <http://purl.obolibrary.org/obo/> .
-@prefix ontology: <https://www.cancerrxgene.org/translation/gdsc/ontology#> .
+@prefix ontology: <https://purl.jp/bio/10/gdsc/ontology#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix sio: <http://semanticscience.org/resource/> .
@@ -16,11 +15,11 @@
 
 <https://www.cancerrxgene.org/translation/Drug/1> a m2r:Drug ;
     rdfs:label "Erlotinib" ;
-    gdsc:target_pathway "EGFR signaling" .
+    ontology:target_pathway "EGFR signaling" .
 
 <https://www.cancerrxgene.org/translation/CellLine/687984> a m2r:CellLine ;
     rdfs:label "DMS153" ;
-    m2r:has_assay [ a gdsc:Assay ;
+    m2r:has_assay [ a ontology:Assay ;
             m2r:drug <https://www.cancerrxgene.org/translation/Drug/1> ;
             m2r:sample <https://www.cancerrxgene.org/translation/CellLine/687984> ;
             dct:identifier "25531" ;
@@ -32,9 +31,10 @@
                     sio:SIO_000221 obo:UO_0000064 ;
                     sio:SIO_000300 87.7434161586443 ] ;
             bao:BAO_0002854 bao:BAO_0020008 ;
-            gdsc:dataset_ver "17.5" ];
+            ontology:dataset_ver "17.5" ];
+
+    m2r:site "lung_small_cell_carcinoma" ;
+    m2r:site_primary "lung" ;
     dct:identifier "687984" ;
-    ontology:tcga_classification "UNCLASSIFIED" ;
-    ontology:tissue "lung" ;
-    ontology:tissue_subtype "lung_small_cell_carcinoma" .
+    ontology:tcga_classification "UNCLASSIFIED" .
 
