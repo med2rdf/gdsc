@@ -63,6 +63,6 @@ python3 gdsc_to_rdf.py
 Reference owl are here.
 
 - https://github.com/med2rdf/med2rdf-ontology/blob/master/med2rdf-0.06.ttl
-- http://www.bioassayontology.org/bao/bao_complete.owl
+- http://www.bioassayontology.org/bao/bao_complete_merged.owl
 - http://semanticscience.org/ontology/sio.owl
 
