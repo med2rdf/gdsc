@@ -48,15 +48,18 @@ Check raw files in container .
     :
 ```
 
-**WARNING**
 
+## Remove lines breaking rules
 Sometimes the format of PANCANCER_ANOVA.csv is corrupted. As see bellow, the number of columns exceed that of the header if it contains multiple drug name.
 ```
 drug_name,drug_id,drug_target,target_pathway,feature_name, ...
 Navitoclax,1011,BCL2, BCL-XL, BCL-W,Apoptosis regulation,ABCB1_mut,13,736, ...
 ```
-Please refer to sample/PANCANCER_ANOVA.csv
 
+You can remove the lines by following command.
+```
+python3 scripts/remove_lines.py
+```
 
 ## Create RDF files
 Run as follow. (It takes about 5 minites / 10 core)
