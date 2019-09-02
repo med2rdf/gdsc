@@ -205,6 +205,8 @@ if __name__ == '__main__':
 		drugHash[drug_id] = [drug_name,None]
 	for drug_id, [drug_name,target_pathway] in drugHash.items():
 		target = list(anova[anova['drug_name'] == drug_name]['target_pathway'].unique())
+		if len(target) == 0:
+			continue
 		if len(target) > 1:
 			target.remove('Unclassified')
 
