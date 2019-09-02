@@ -6,3 +6,4 @@ scikit-learn
 pandas
 glob2
 requests
+progressbar2
