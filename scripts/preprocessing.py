@@ -28,11 +28,7 @@ def make_id_map(text, db_name='GDSC'):
 def check_raw_file():
 	if not os.path.isfile(get_param(DbName.GDSC, 'in_gdsc_drug_file')[0]):
 		print("GDSC DRUGファイルをpickle化")
-		try:
-			file_path = get_param(DbName.PRE, 'in_gdsc_drug_file')[0]
-		except:
-			file_path = glob('data/raw/PANCANCER_IC*csv')[0]
-		df = pd.read_csv(file_path, low_memory=False)
+		df = pd.read_csv(get_param(DbName.PRE, 'in_gdsc_drug_file')[0], low_memory=False)
 		df.drop_duplicates(['Drug name', 'Cell line name'], keep=False, inplace=True)
 		df = df.fillna({'Tissue': 'unknown', 'Tissue sub-type': 'unknown', 'TCGA classification': 'unknown'})
 		with open(get_param(DbName.GDSC, 'in_gdsc_drug_file')[0], 'wb') as f:
@@ -41,11 +37,7 @@ def check_raw_file():
 
 	if not os.path.isfile(get_param(DbName.GDSC, 'in_gdsc_anova_file')[0]):
 		print("GDSC ANOVAファイルをpickle化")
-		try:
-			file_path = get_param(DbName.PRE, 'in_gdsc_anova_file')[0]
-		except:
-			file_path = glob('data/raw/PANCANCER_ANOVA*csv')[0]
-		df = pd.read_csv(file_path, low_memory=False)
+		df = pd.read_csv(get_param(DbName.PRE, 'in_gdsc_anova_file')[0], low_memory=False)
 		with open(get_param(DbName.GDSC, 'in_gdsc_anova_file')[0], 'wb') as f:
 			pickle.dump(df, f)
 		del df
