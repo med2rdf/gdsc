@@ -35,7 +35,7 @@ Check script files in container .
 Run as follows. Select GDSC version (1 or 2).
 ```
 $ mkdir output
-$ cs scripts/
+$ cd scripts/
 $ python3 download_files.py -v 2
 ```
 
