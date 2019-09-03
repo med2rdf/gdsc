@@ -10,9 +10,6 @@ def search_ttl(file_path):
             line = f.readline().strip()
             if line.startswith('gdscd'):
                 drugs.append(line.split(' ')[0].split(':')[-1])
-                # while line:
-                #     lines.append(line)
-                #     line = f.readline().strip()
             if line.startswith('m2r:drug'):
                 drug = line.split(' ')[1].split(':')[1]
                 if drug in drugs:
