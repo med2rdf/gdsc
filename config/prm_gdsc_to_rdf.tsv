@@ -1,4 +1,4 @@
 parameter	value
-in_gdsc_drug_file	../data/PANCANCER_IC_Wed Oct 10 03_15_39 2018.pkl
-in_gdsc_anova_file	../data/PANCANCER_ANOVA_Wed Oct 10 03_46_43 2018.pkl
+in_gdsc_drug_file	../data/PANCANCER_IC.pkl
+in_gdsc_anova_file	../data/PANCANCER_ANOVA.pkl
 out_folder	../output/

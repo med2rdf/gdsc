@@ -1,24 +1,6 @@
 # gdsc
 GDSC RDF converter
 
-## Get Dataset  
-Download data from the following web site .
-* [GDSC](https://www.cancerrxgene.org/downloads)　["PANCANCER_IC"](https://www.cancerrxgene.org/translation/drug/download#ic50) ["PANCANCER_ANOVA"](https://www.cancerrxgene.org/translation/drug/download#anova)
-
-```
-- PANCANCER_IC_Wed Oct 10 03_15_39 2018.csv
-- PANCANCER_ANOVA_Wed Oct 10 03_46_43 2018.csv
-```
-
-Correct wrong data about the format of csv.
-For example, "Other, kinase" -> "Other kinase".
-
-* [Cellosaurus](https://web.expasy.org/cellosaurus/)
-```
-- cellosaurus.txt
-```
-
-ftp://ftp.expasy.org/databases/cellosaurus
 ## Check docker-compose.yaml
 Edit docker-compose.yaml and build docker container using docker-compose .
 ```
@@ -36,28 +18,56 @@ docker-compose up -d
 docker-compose exec gdsc_cnvtr bash
 ```
 
-## Create RDF files
-Check script and raw files in container .
+Check script files in container .
+```
+/work/
+    ┣ scripts/
+    ┃   ┣ __init__.py
+    ┃   ┣ download_files.py
+    ┃   ┣ gdsc_to_rdf.py
+    ┃   ┣ omics_to_rdf.py
+    ┃   ┗ preprocessing.py
+    :
+```
+
+
+## Get Dataset
+Run as follows. Select GDSC version (1 or 2).
+```
+$ mkdir output
+$ cs scripts/
+$ python3 download_files.py -v 2
+```
+
+Check raw files in container .
 ```
 /work/
     ┣ data/
     ┃   ┗ raw/
-    ┃       ┣ PANCANCER_IC_Wed Oct 10 03_15_39 2018.csv
-    ┃       ┣ PANCANCER_ANOVA_Wed Oct 10 03_46_43 2018.csv
+    ┃       ┣ PANCANCER_IC.csv
+    ┃       ┣ PANCANCER_ANOVA.csv
     ┃       ┗ cellosaurus.txt
-    ┃
-    ┣ scripts/
-    ┃   ┣ __init__.py
-    :   ┣ gdsc_to_rdf.py
-        ┣ omics_to_rdf.py           
-        ┗ preprocessing.py
+    :
 ```
 
+
+## Remove lines breaking rules
+Sometimes the format of PANCANCER_ANOVA.csv is corrupted. As see bellow, the number of columns exceed that of the header if it contains multiple drug name.
+```
+drug_name,drug_id,drug_target,target_pathway,feature_name, ...
+Navitoclax,1011,BCL2, BCL-XL, BCL-W,Apoptosis regulation,ABCB1_mut,13,736, ...
+```
+
+You can remove the lines by following command.
+```
+$ python3 remove_lines.py -v 2
+```
+
+## Create RDF files
 Run as follow. (It takes about 5 minites / 10 core)
 ```
-cd /work/scripts
-python3 preprocessing.py
-python3 gdsc_to_rdf.py
+$ python3 preprocessing.py -v 2
+$ python3 gdsc_to_rdf.py -v 2
 ```
 
 Reference owl are here.

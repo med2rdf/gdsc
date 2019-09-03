@@ -33,8 +33,12 @@ parser.add_argument('-cp', '--ccle_path', help='CCLE/turtleのパラメータフ
 parser.add_argument('-pp', '--precessing_path', help='前処理パラメータファイルパス', default='../config/prm_preprocessing.tsv')
 parser.add_argument('-cm', '--common_path', help='共通パラメータファイルパス', default='../config/prm_common.tsv')
 parser.add_argument("-n", "--normalize", help="各オミックスデータ正規化の有無", action="store_true")
+parser.add_argument('-v', '--version', help='GDSC version. Current options are [1, 2]', type=int, required=True)
 args = parser.parse_args()
 warnings.filterwarnings('ignore')
+
+GDSC_PREFIX = 'result_gdsc_'.replace('gdsc_', 'gdsc_' + str(args.version) + '_')
+
 
 def get_param(category, prm_name):
 	try:
