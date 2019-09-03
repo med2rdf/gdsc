@@ -32,9 +32,11 @@ Check script files in container .
 
 
 ## Get Dataset
-Run as follows.
+Run as follows. Select GDSC version (1 or 2).
 ```
-$ python3 scripts/download_files.py
+$ mkdir output
+$ cs scripts/
+$ python3 download_files.py -v 2
 ```
 
 Check raw files in container .
@@ -58,14 +60,14 @@ Navitoclax,1011,BCL2, BCL-XL, BCL-W,Apoptosis regulation,ABCB1_mut,13,736, ...
 
 You can remove the lines by following command.
 ```
-python3 scripts/remove_lines.py
+$ python3 remove_lines.py -v 2
 ```
 
 ## Create RDF files
 Run as follow. (It takes about 5 minites / 10 core)
 ```
-python3 preprocessing.py
-python3 gdsc_to_rdf.py
+$ python3 preprocessing.py -v 2
+$ python3 gdsc_to_rdf.py -v 2
 ```
 
 Reference owl are here.

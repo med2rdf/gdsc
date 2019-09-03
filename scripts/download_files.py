@@ -3,6 +3,7 @@ import os
 from urllib.parse import urlparse
 from ftplib import FTP
 from progressbar import ProgressBar, UnknownLength
+import argparse
 
 
 def download(url, dir_name, file_name):
@@ -59,10 +60,21 @@ def update_pbar(data, f, pbar):
     return
 
 
-save_dir = 'data/raw'
-if not os.path.isdir(save_dir):
-    os.makedirs(save_dir)
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-v', '--version', help='GDSC version. Current options are [1, 2]', type=int, required=True)
+    args = parser.parse_args()
 
-download('https://www.cancerrxgene.org/downloads/download/ic', save_dir, 'PANCANCER_IC.csv')
-download('https://www.cancerrxgene.org/downloads/download/anova', save_dir, 'PANCANCER_ANOVA.csv')
-download('ftp://ftp.expasy.org/databases/cellosaurus/cellosaurus.txt', save_dir, 'cellosaurus.txt')
+    save_dir = '../data/raw'
+    if not os.path.isdir(save_dir):
+        os.makedirs(save_dir)
+
+    if args.version == 1:
+        q = '?screening_set=GDSC1'
+        download('https://www.cancerrxgene.org/downloads/download/ic' + q, save_dir, 'PANCANCER_IC_GDSC1.csv')
+        download('https://www.cancerrxgene.org/downloads/download/anova' + q, save_dir, 'PANCANCER_ANOVA_GDSC1.csv')
+    elif args.version == 2:
+        download('https://www.cancerrxgene.org/downloads/download/ic', save_dir, 'PANCANCER_IC_GDSC2.csv')
+        download('https://www.cancerrxgene.org/downloads/download/anova', save_dir, 'PANCANCER_ANOVA_GDSC2.csv')
+
+    download('ftp://ftp.expasy.org/databases/cellosaurus/cellosaurus.txt', save_dir, 'cellosaurus.txt')
