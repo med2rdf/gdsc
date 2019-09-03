@@ -8,7 +8,6 @@ from scripts.omics_to_rdf import *
 from joblib import delayed
 import re
 import math
-import argparse
 
 tag_list = ["Cell line name",
             "Drug name",
